@@ -1,5 +1,6 @@
 # mini_compiler
 Mini Compiler – CS F363 (Python)
+
 This is a small compiler project for the CS F363 Compiler Construction course.  
 The goal is to build the full pipeline step by step:
 
@@ -9,7 +10,7 @@ The goal is to build the full pipeline step by step:
 - **Intermediate code (TAC)**
 - **Basic optimisation + pseudo assembly**
 
-Right now (Week 1 / Midsem Q1) only the **lexer** is implemented and working.
+Right now only the **lexer** is implemented and working.
 
 ---
 
@@ -22,6 +23,18 @@ Right now (Week 1 / Midsem Q1) only the **lexer** is implemented and working.
   - **`__init__.py`** – marks this as a package.
   - **`tokens.py`** – token kinds (`TokenType`), `Token`, and `LexicalError`.
   - **`lexer.py`** – regex-based lexer used for Q1.
+
+---
+## Contributors
+
+This project is being developed collaboratively as part of the **CS F363 Compiler Construction assignment**.
+
+- Shambhavi Jha [2023A7PS0009U]
+- Venkata Shreya Vella [2023A7PS0096U]
+- Yuvaraj Nayak [2023A7PS0006U]
+- Krishna Nagpal [2023A7PS0321U]
+
+Contribution details for each phase will be documented in **`contribution.md`**.
 
 ---
 
