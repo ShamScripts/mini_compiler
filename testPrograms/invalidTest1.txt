@@ -1,0 +1,2 @@
+int 2value;
+2value = 10;

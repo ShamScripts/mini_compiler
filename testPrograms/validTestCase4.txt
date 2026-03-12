@@ -1,0 +1,11 @@
+int a;
+int b;
+float avg;
+a = 12;
+b = 4;
+avg = (a + b) / 2.0;
+if (!(avg &lt; 5.0)) {
+print(avg);
+} else {
+print(a);
+}

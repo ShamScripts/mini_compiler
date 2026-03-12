@@ -30,7 +30,17 @@ def run_lexical_analysis(source_code):
 
 def main(filename=None):
     if filename is None:
-        filename = "evaluation_program.txt"
+        filename = "testPrograms/program.txt"
+        # filename = "testPrograms/invalidTest1.txt" -> python compiler.py testPrograms/invalidTest1.txt
+        # filename = "testPrograms/invalidTest2.txt" -> python compiler.py testPrograms/invalidTest2.txt
+        # filename = "testPrograms/invalidTest3.txt" -> python compiler.py testPrograms/invalidTest3.txt
+        # filename = "testPrograms/invalidTest4.txt" -> python compiler.py testPrograms/invalidTest4.txt
+        # filename = "testPrograms/invalidTest5.txt" -> python compiler.py testPrograms/invalidTest5.txt
+        # filename = "testPrograms/validTestCase1.txt" -> python compiler.py testPrograms/validTestCase1.txt
+        # filename = "testPrograms/validTestCase2.txt" -> python compiler.py testPrograms/validTestCase2.txt
+        # filename = "testPrograms/validTestCase3.txt" -> python compiler.py testPrograms/validTestCase3.txt
+        # filename = "testPrograms/validTestCase4.txt" -> python compiler.py testPrograms/validTestCase4.txt
+
 
     path = Path(filename)
     if not path.is_file():

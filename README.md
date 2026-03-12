@@ -1,4 +1,5 @@
 # mini_compiler
+
 Mini Compiler – CS F363 (Python)
 
 This is a small compiler project for the CS F363 Compiler Construction course.  
@@ -25,6 +26,7 @@ Right now only the **lexer** is implemented and working.
   - **`lexer.py`** – regex-based lexer used for Q1.
 
 ---
+
 ## Contributors
 
 This project is being developed collaboratively as part of the **CS F363 Compiler Construction assignment**.
@@ -34,7 +36,7 @@ This project is being developed collaboratively as part of the **CS F363 Compile
 - Yuvaraj Nayak [2023A7PS0006U]
 - Krishna Nagpal [2023A7PS0321U]
 
-Contribution details for each phase will be documented in **`contribution.md`**.
+Contribution details for each phase will be documented in [**`contribution.md`**](contribution.md).
 
 ---
 
@@ -48,7 +50,7 @@ python compiler.py
 
 This will:
 
-- Read `evaluation_program.txt`,
+- Read `program.txt`,
 - Run the lexer,
 - Print any **lexical errors**,
 - Print the full **token stream** (token type, lexeme, line, column).
@@ -56,7 +58,18 @@ This will:
 You can also pass a different source file:
 
 ```bash
-python compiler.py some_other_program.txt
+# Invalid test cases
+python compiler.py testPrograms/invalidTest1.txt
+python compiler.py testPrograms/invalidTest2.txt
+python compiler.py testPrograms/invalidTest3.txt
+python compiler.py testPrograms/invalidTest4.txt
+python compiler.py testPrograms/invalidTest5.txt
+
+# Valid test cases
+python compiler.py testPrograms/validTestCase1.txt
+python compiler.py testPrograms/validTestCase2.txt
+python compiler.py testPrograms/validTestCase3.txt
+python compiler.py testPrograms/validTestCase4.txt
 ```
 
 ---

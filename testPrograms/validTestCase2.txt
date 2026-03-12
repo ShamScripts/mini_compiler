@@ -1,0 +1,9 @@
+int x;
+int y;
+x = 5;
+y = x * (3 + 2);
+if (y &gt;= 10) {
+print(y);
+} else {
+print(x);
+}
