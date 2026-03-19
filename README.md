@@ -11,19 +11,22 @@ The goal is to build the full pipeline step by step:
 - **Intermediate code (TAC)**
 - **Basic optimisation + pseudo assembly**
 
-Right now only the **lexer** is implemented and working.
+Right now only the **lexer** and **syntax** is implemented and working.
 
 ---
 
 ### Project layout
 
-- **`compiler.py`** – main script. For now it only runs lexical analysis on an input file.
+- **`compiler.py`** – main script. Entry point; menu-driven interface
 - **`evaluation_program.txt`** – the uniform test program given in the assignment.
-- **`contribution.md`** – member-wise work distribution (M1–M4) for all questions.
+- **`contribution.md`** – member-wise work distribution for all questions.
+- **`testPrograms/`** – valid and invalid test cases with evaluation program
 - **`modules/`**
   - **`__init__.py`** – marks this as a package.
   - **`tokens.py`** – token kinds (`TokenType`), `Token`, and `LexicalError`.
-  - **`lexer.py`** – regex-based lexer used for Q1.
+  - **`lexer.py`** – lexical analyzer (regex-based)
+  - **`parser.py`** – recursive-descent parser + AST
+  - **`syntax_analyzer.py`** – syntax driver
 
 ---
 
