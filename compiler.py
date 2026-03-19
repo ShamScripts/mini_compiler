@@ -1,54 +1,167 @@
 from pathlib import Path
 from modules.lexer import Lexer
+from modules.parser import Parser, ast_dump
+
+W = 76
+_B = "-"
+_EQ = "="
 
 
-def run_lexical_analysis(source_code):
-    """Run the lexer and print tokens / errors."""
-    lexer = Lexer(source_code)
-    tokens, errors = lexer.tokenize()
-
-    print("=" * 80)
-    print("PHASE: LEXICAL ANALYSIS (Q1)")
-    print("=" * 80)
+def _heading(num: int, title: str, src: str | None = None) -> None:
+    line = _EQ * (W - 4)
+    print()
+    print(f"  +{line}+")
+    print(f"  |  {num}. {title:<{W - 10}} |")
+    if src:
+        print(f"  |  Source: {src:<{W - 14}} |")
+    print(f"  +{line}+")
     print()
 
-    if errors:
-        print("Lexical errors found:\n")
-        for err in errors:
-            print(err)
-        print("\nToken stream up to errors:\n")
+
+def _tokens(tok_list) -> None:
+    col_idx, col_ln, col_col, col_type, col_lex = 4, 5, 5, 16, 30
+    d = _B * (col_idx + 1)
+    h = f"  +{d}+{_B * (col_ln + 1)}+{_B * (col_col + 1)}+{_B * (col_type + 1)}+{_B * (col_lex + 1)}+"
+    print(h)
+    print(f"  | {'#':<{col_idx}} | {'Line':<{col_ln}} | {'Col':<{col_col}} | {'Type':<{col_type}} | {'Lexeme':<{col_lex}} |")
+    print(h)
+    for i, tok in enumerate(tok_list):
+        lex = tok.lexeme if tok.lexeme else "<EOF>"
+        if len(lex) > col_lex - 2:
+            lex = lex[: col_lex - 5] + "..."
+        print(f"  | {i:<{col_idx}} | {tok.line:<{col_ln}} | {tok.column:<{col_col}} | {tok.type.name:<{col_type}} | {lex:<{col_lex}} |")
+    print(h)
+    print()
+
+
+def _errors(lex_errors, syn_errors, src: str) -> None:
+    _heading(1, "CHECK FOR ERRORS", src)
+    bar = _B * (W - 6)
+    top = f"  +{bar}+"
+    print(top)
+    if lex_errors:
+        print(f"  |  Lexical errors ({len(lex_errors)} found):")
+        print(f"  |{bar}+")
+        for i, err in enumerate(lex_errors, 1):
+            for ln in str(err).split("\n"):
+                print(f"  |  {ln}")
+            if i < len(lex_errors):
+                print(f"  |")
+        print(top)
     else:
-        print("No lexical errors.\n")
+        print(f"  |  [OK] No lexical errors.")
+        print(top)
 
-    print("Token stream:")
-    print("-" * 60)
-    print(f"{'idx':>3}  {'line':>4} {'col':>4}  {'type':<15}  lexeme")
-    print("-" * 60)
-    for i, tok in enumerate(tokens):
-        print(f"{i:>3}  {tok.line:>4} {tok.column:>4}  {tok.type.name:<15}  {tok.lexeme!r}")
+    print()
+    if lex_errors:
+        print(top)
+        print(f"  |  Syntax analysis skipped (lexical errors present).")
+        print(top)
+    elif syn_errors is not None:
+        print(top)
+        if syn_errors:
+            print(f"  |  Syntax errors ({len(syn_errors)} found):")
+            print(f"  |{bar}+")
+            for i, err in enumerate(syn_errors, 1):
+                for ln in str(err).split("\n"):
+                    print(f"  |  {ln}")
+                if i < len(syn_errors):
+                    print(f"  |")
+            print(top)
+        else:
+            print(f"  |  [OK] No syntax errors.")
+            print(top)
+    print()
 
 
-def main(filename=None):
-    if filename is None:
-        filename = "testPrograms/program.txt"
-        # filename = "testPrograms/invalidTest1.txt" -> python compiler.py testPrograms/invalidTest1.txt
-        # filename = "testPrograms/invalidTest2.txt" -> python compiler.py testPrograms/invalidTest2.txt
-        # filename = "testPrograms/invalidTest3.txt" -> python compiler.py testPrograms/invalidTest3.txt
-        # filename = "testPrograms/invalidTest4.txt" -> python compiler.py testPrograms/invalidTest4.txt
-        # filename = "testPrograms/invalidTest5.txt" -> python compiler.py testPrograms/invalidTest5.txt
-        # filename = "testPrograms/validTestCase1.txt" -> python compiler.py testPrograms/validTestCase1.txt
-        # filename = "testPrograms/validTestCase2.txt" -> python compiler.py testPrograms/validTestCase2.txt
-        # filename = "testPrograms/validTestCase3.txt" -> python compiler.py testPrograms/validTestCase3.txt
-        # filename = "testPrograms/validTestCase4.txt" -> python compiler.py testPrograms/validTestCase4.txt
+def _tree(ast) -> None:
+    bar = _B * (W - 6)
+    print(f"  +{bar}+")
+    for ln in ast_dump(ast).split("\n"):
+        print(f"  |  {ln}")
+    print(f"  +{bar}+")
+    print()
 
 
-    path = Path(filename)
+def _menu() -> str:
+    bar = _B * (W - 6)
+    print()
+    print(f"  +{bar}+")
+    print(f"  |  MENU:")
+    print(f"  |    1. Check for errors")
+    print(f"  |    2. Generate stream of tokens")
+    print(f"  |    3. Parse Tree (AST)")
+    print(f"  |    4. Exit")
+    print(f"  +{bar}+")
+    print()
+    return input("  Enter choice (1-4): ").strip()
+
+
+def main(filename: str | None = None) -> None:
+    path = Path(filename or "evaluation_program.txt")
     if not path.is_file():
         raise SystemExit(f"Input file not found: {filename}")
 
     source = path.read_text(encoding="utf-8")
-    
-    run_lexical_analysis(source)    #q1
+    src = path.name
+
+    lexer = Lexer(source)
+    tokens, lex_errors = lexer.tokenize()
+
+    ast = None
+    syn_errors = None
+    if not lex_errors:
+        parser = Parser(tokens)
+        ast = parser.parse()
+        syn_errors = parser.errors
+
+    h = _EQ * (W - 2)
+    print()
+    print(f"  {h}")
+    print("  MINI COMPILER")
+    print(f"  {h}")
+    print(f"  Source file: {src}")
+    print(f"  {h}")
+
+    while True:
+        choice = _menu()
+
+        if choice == "1":
+            _errors(lex_errors, syn_errors, src)
+
+        elif choice == "2":
+            _heading(2, "GENERATE STREAM OF TOKENS", src)
+            _tokens(tokens)
+
+        elif choice == "3":
+            _heading(3, "PARSE TREE (AST)", src)
+            bar = _B * (W - 6)
+            if lex_errors:
+                print(f"  +{bar}+")
+                print(f"  |  Cannot generate: lexical errors present.")
+                print(f"  +{bar}+")
+            elif syn_errors:
+                print(f"  +{bar}+")
+                print(f"  |  Cannot generate: syntax errors present.")
+                print(f"  +{bar}+")
+            elif ast is not None:
+                _tree(ast)
+            else:
+                print(f"  +{bar}+")
+                print(f"  |  Parse tree not available.")
+                print(f"  +{bar}+")
+            print()
+
+        elif choice == "4":
+            print()
+            print("  Exiting.")
+            print()
+            break
+
+        else:
+            print()
+            print("  Invalid choice. Please enter 1, 2, 3, or 4.")
+            print()
 
 
 if __name__ == "__main__":
@@ -56,4 +169,3 @@ if __name__ == "__main__":
 
     arg = sys.argv[1] if len(sys.argv) > 1 else None
     main(arg)
-

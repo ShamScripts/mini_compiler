@@ -1,3 +1,7 @@
+"""
+Token definitions 
+"""
+
 from dataclasses import dataclass
 from enum import Enum, auto
 
@@ -62,13 +66,34 @@ class Token:
 
 @dataclass
 class LexicalError:
-    message: str
+    error_type: str       
+    expected: str         
     line: int
     column: int
-    offending_char: str
+    offending_char: str   
 
     def __str__(self) -> str:
-        return f"Lexical error at line {self.line}, col {self.column}: {self.message} (got {self.offending_char!r})"
+        return (
+            f"LEXICAL ERROR ({self.error_type}):\n"
+            f"  Expected: {self.expected}\n"
+            f"  Found: {self.offending_char!r} at line {self.line}, col {self.column}"
+        )
+
+
+@dataclass
+class SyntaxErrorReport:
+    error_type: str   
+    expected: str     
+    found: str        
+    line: int
+    column: int
+
+    def __str__(self) -> str:
+        return (
+            f"SYNTAX ERROR ({self.error_type}):\n"
+            f"  Expected: {self.expected}\n"
+            f"  Found: {self.found} at line {self.line}, col {self.column}"
+        )
 
 
 KEYWORDS = {
