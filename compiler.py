@@ -1,6 +1,9 @@
 from pathlib import Path
 from modules.lexer import Lexer
 from modules.parser import Parser, ast_dump
+from modules.ll1_parser import LL1Parser
+from modules.slr_parser import SLRParser
+from modules.symbol_table import SymbolTable, Symbol, Scope
 
 W = 76
 _B = "-"
@@ -91,14 +94,17 @@ def _menu() -> str:
     print(f"  |    1. Check for errors")
     print(f"  |    2. Generate stream of tokens")
     print(f"  |    3. Parse Tree (AST)")
-    print(f"  |    4. Exit")
+    print(f"  |    4. LL(1) Parser Evaluation (Stack Trace)")
+    print(f"  |    5. SLR(1) Parser Evaluation (Stack Trace)")
+    print(f"  |    6. Symbol Table Demonstration (Nested Scopes)")
+    print(f"  |    7. Exit")
     print(f"  +{bar}+")
     print()
-    return input("  Enter choice (1-4): ").strip()
+    return input("  Enter choice (1-7): ").strip()
 
 
 def main(filename: str | None = None) -> None:
-    path = Path(filename or "evaluation_program.txt")
+    path = Path(filename or "testPrograms/evaluation_program.txt")
     if not path.is_file():
         raise SystemExit(f"Input file not found: {filename}")
 
@@ -153,6 +159,43 @@ def main(filename: str | None = None) -> None:
             print()
 
         elif choice == "4":
+            _heading(4, "LL(1) PARSER EVALUATION", src)
+            if lex_errors:
+                print("  Lexical errors present. Skipping.")
+            else:
+                ll1 = LL1Parser(tokens)
+                if ll1.parse():
+                    ll1.print_trace()
+                else:
+                    print(f"  LL(1) Parsing failed: {ll1.errors[0] if ll1.errors else 'Unknown error'}")
+                    ll1.print_trace()
+
+        elif choice == "5":
+            _heading(5, "SLR(1) PARSER EVALUATION", src)
+            if lex_errors:
+                print("  Lexical errors present. Skipping.")
+            else:
+                slr = SLRParser(tokens)
+                if slr.parse():
+                    slr.print_trace()
+                else:
+                    print(f"  SLR(1) Parsing failed: {slr.errors[0] if slr.errors else 'Unknown error'}")
+                    slr.print_trace()
+
+        elif choice == "6":
+            _heading(6, "SYMBOL TABLE DEMONSTRATION", src)
+            st = SymbolTable()
+            # Simulation of symbol table updates for evaluation program
+            st.insert("a", "int")
+            st.insert("b", "int")
+            st.insert("sum", "int")
+            st.insert("avg", "float")
+            st.enter_scope() # while scope
+            st.insert("temp", "int")
+            st.exit_scope()
+            st.dump()
+
+        elif choice == "7":
             print()
             print("  Exiting.")
             print()
@@ -160,7 +203,7 @@ def main(filename: str | None = None) -> None:
 
         else:
             print()
-            print("  Invalid choice. Please enter 1, 2, 3, or 4.")
+            print("  Invalid choice. Please enter 1-7.")
             print()
 
 

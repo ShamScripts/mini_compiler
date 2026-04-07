@@ -11,11 +11,17 @@ The goal is to build the full pipeline step by step:
 - **Intermediate code (TAC)**
 - **Basic optimisation + pseudo assembly**
 
-Right now only the **lexer** and **syntax** is implemented and working.
+Right now the following are implemented:
+
+- **Lexical Analysis**
+- **Recursive-Descent Syntax Analysis**
+- **LL(1) Table-Driven Parsing** (Compre Eval Q1)
+- **Shift-Reduce Parsing** (Compre Eval Q1)
+- **Nested Symbol Table Management** (Compre Eval Q2)
 
 ---
 
-### Project layout
+## Project layout
 
 - **`compiler.py`** – main script. Entry point; menu-driven interface
 - **`evaluation_program.txt`** – the uniform test program given in the assignment.
@@ -26,7 +32,12 @@ Right now only the **lexer** and **syntax** is implemented and working.
   - **`tokens.py`** – token kinds (`TokenType`), `Token`, and `LexicalError`.
   - **`lexer.py`** – lexical analyzer (regex-based)
   - **`parser.py`** – recursive-descent parser + AST
+  - **`ll1_parser.py`** – LL(1) table-driven parser (Q1)
+  - **`slr_parser.py`** – SLR(1) shift-reduce parser (Q1)
+  - **`symbol_table.py`** – nested scope symbol table (Q2)
   - **`syntax_analyzer.py`** – syntax driver
+  - **`tac_generator.py`** – intermediate code generation (Q3)
+  - **`optimizer.py`** – basic block optimization (Q4)
 
 ---
 
