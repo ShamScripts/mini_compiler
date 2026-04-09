@@ -16,29 +16,39 @@ class Grammar:
 
     def _compute_first(self):
         first = collections.defaultdict(set)
+
         for t in self.terminals:
             first[t].add(t)
-        
+
         changed = True
         while changed:
             changed = False
             for head, bodies in self.productions.items():
                 for body in bodies:
-                    if not body: # epsilon production
+                    if not body:
                         if "" not in first[head]:
                             first[head].add("")
                             changed = True
                     else:
+                        all_have_epsilon = True
+
                         for symbol in body:
                             before = len(first[head])
+
                             first[head].update(first[symbol] - {""})
+
+                            if len(first[head]) > before:
+                                changed = True
+
                             if "" not in first[symbol]:
+                                all_have_epsilon = False
                                 break
-                            if len(first[head]) > before: changed = True
-                        else: # all symbols in body can be empty
+
+                        if all_have_epsilon:
                             if "" not in first[head]:
                                 first[head].add("")
                                 changed = True
+
         return first
 
     def _compute_follow(self):
@@ -53,7 +63,6 @@ class Grammar:
                     for i, symbol in enumerate(body):
                         if symbol in self.non_terminals:
                             before = len(follow[symbol])
-                            # Rule: Follow(symbol) includes First(rest of body)
                             rest = body[i+1:]
                             if not rest:
                                 follow[symbol].update(follow[head])
@@ -71,7 +80,6 @@ class Grammar:
         table = collections.defaultdict(dict)
         for head, bodies in self.productions.items():
             for body in bodies:
-                # First of the body
                 body_first = set()
                 if not body:
                     body_first.add("")
@@ -177,23 +185,32 @@ MINI_COMPILER_GRAMMAR = {
     "Type": [["int"], ["float"]],
     "Stmts": [["Stmt", "Stmts"], []],
     "Stmt": [["Assign"], ["IfStmt"], ["WhileStmt"], ["PrintStmt"], ["Block"]],
-    "Assign": [["IDENTIFIER", "ASSIGN", "Expr", "SEMICOLON"]],
+    "Assign": [["IDENTIFIER", "ASSIGN", "BoolExpr", "SEMICOLON"]],
     "IfStmt": [["if", "LPAREN", "BoolExpr", "RPAREN", "Block", "ElsePart"]],
     "ElsePart": [["else", "Block"], []],
     "WhileStmt": [["while", "LPAREN", "BoolExpr", "RPAREN", "Block"]],
-    "PrintStmt": [["print", "LPAREN", "Expr", "RPAREN", "SEMICOLON"]],
+    "PrintStmt": [["print", "LPAREN", "BoolExpr", "RPAREN", "SEMICOLON"]],
     "Block": [["LBRACE", "Decls", "Stmts", "RBRACE"]],
+    
+    # Unified Expression Hierarchy (Resolves LL(1) Parentheses Conflict)
+    "BoolExpr": [["BoolTerm", "BoolExprPrime"]],
+    "BoolExprPrime": [["OR", "BoolTerm", "BoolExprPrime"], []],
+    "BoolTerm": [["RelExpr", "BoolTermPrime"]],
+    "BoolTermPrime": [["AND", "RelExpr", "BoolTermPrime"], []],
+    "RelExpr": [["Expr", "RelExprPrime"]],
+    "RelExprPrime": [["RelOp", "Expr"], []],
     "Expr": [["Term", "ExprPrime"]],
     "ExprPrime": [["PLUS", "Term", "ExprPrime"], ["MINUS", "Term", "ExprPrime"], []],
     "Term": [["Factor", "TermPrime"]],
     "TermPrime": [["MUL", "Factor", "TermPrime"], ["DIV", "Factor", "TermPrime"], ["MOD", "Factor", "TermPrime"], []],
-    "Factor": [["IDENTIFIER"], ["INT_LITERAL"], ["FLOAT_LITERAL"], ["LPAREN", "Expr", "RPAREN"]],
-    "BoolExpr": [["BoolTerm", "BoolExprPrime"]],
-    "BoolExprPrime": [["OR", "BoolTerm", "BoolExprPrime"], []],
-    "BoolTerm": [["BoolFactor", "BoolTermPrime"]],
-    "BoolTermPrime": [["AND", "BoolFactor", "BoolTermPrime"], []],
-    "BoolFactor": [["NOT", "BoolFactor"], ["LPAREN", "BoolExpr", "RPAREN"], ["RelExpr"]],
-    "RelExpr": [["Expr", "RelOp", "Expr"]],
+    "Factor": [
+        ["IDENTIFIER"], 
+        ["INT_LITERAL"], 
+        ["FLOAT_LITERAL"], 
+        ["LPAREN", "BoolExpr", "RPAREN"], 
+        ["NOT", "Factor"], 
+        ["MINUS", "Factor"]
+    ],
     "RelOp": [["LT"], ["GT"], ["LE"], ["GE"], ["EQ"], ["NE"]]
 }
 
