@@ -96,11 +96,12 @@ def _menu() -> str:
     print(f"  |    3. Parse Tree (AST)")
     print(f"  |    4. LL(1) Parser Evaluation (Stack Trace)")
     print(f"  |    5. SLR(1) Parser Evaluation (Stack Trace)")
-    print(f"  |    6. Symbol Table Demonstration (Nested Scopes)")
-    print(f"  |    7. Exit")
+    print(f"  |    7. Parser Construction Materials (FIRST/FOLLOW/Tables)")
+    print(f"  |    8. Symbol Table Demonstration (Nested Scopes)")
+    print(f"  |    9. Exit")
     print(f"  +{bar}+")
     print()
-    return input("  Enter choice (1-7): ").strip()
+    return input("  Enter choice (1-9): ").strip()
 
 
 def main(filename: str | None = None) -> None:
@@ -182,8 +183,55 @@ def main(filename: str | None = None) -> None:
                     print(f"  SLR(1) Parsing failed: {slr.errors[0] if slr.errors else 'Unknown error'}")
                     slr.print_trace()
 
-        elif choice == "6":
-            _heading(6, "SYMBOL TABLE DEMONSTRATION", src)
+        elif choice == "7":
+            _heading(7, "PARSER CONSTRUCTION MATERIALS", src)
+            from modules.grammar_utils import get_mini_compiler_grammar
+            g = get_mini_compiler_grammar()
+            print("  [1] FIRST Sets")
+            print("  [2] FOLLOW Sets")
+            print("  [3] LL(1) Parsing Table")
+            print("  [4] SLR(1) Action/Goto Table")
+            sub = input("\n  Select material (1-4): ").strip()
+            
+            if sub == "1":
+                print("\n  FIRST SETS:")
+                for nt in sorted(g.non_terminals):
+                    first_list = sorted(filter(None, g.first[nt]))
+                    eps = "eps" if "" in g.first[nt] else ""
+                    print(f"    FIRST({nt:<15}) = {{ {', '.join(first_list)} {eps} }}")
+            elif sub == "2":
+                print("\n  FOLLOW SETS:")
+                for nt in sorted(g.non_terminals):
+                    follow_list = sorted(g.follow[nt])
+                    print(f"    FOLLOW({nt:<15}) = {{ {', '.join(follow_list)} }}")
+            elif sub == "3":
+                print("\n  LL(1) PARSING TABLE:")
+                ll_table = g.get_ll1_table()
+                for nt, entries in sorted(ll_table.items()):
+                    for t, body in sorted(entries.items()):
+                        prod = " ".join(body) if body else "eps"
+                        print(f"    M[{nt:<15}, {t:<15}] = {nt} -> {prod}")
+            elif sub == "4":
+                print("\n  SLR(1) TABLES:")
+                action, goto, rules = g.get_slr_table()
+                print("  ACTION TABLE (Sample):")
+                # Show first 50 entries to avoid overwhelming
+                count = 0
+                for (state, sym), act in sorted(action.items()):
+                    print(f"    Action({state:<3}, {sym:<12}) = {act}")
+                    count += 1
+                    if count > 50: break
+                print("    ...")
+                print("\n  GOTO TABLE (Sample):")
+                count = 0
+                for (state, nt), gt in sorted(goto.items()):
+                    print(f"    Goto({state:<3}, {nt:<15}) = {gt}")
+                    count += 1
+                    if count > 30: break
+                print("    ...")
+
+        elif choice == "8":
+            _heading(8, "SYMBOL TABLE DEMONSTRATION", src)
             st = SymbolTable()
             # Simulation of symbol table updates for evaluation program
             st.insert("a", "int")
@@ -195,7 +243,7 @@ def main(filename: str | None = None) -> None:
             st.exit_scope()
             st.dump()
 
-        elif choice == "7":
+        elif choice == "9":
             print()
             print("  Exiting.")
             print()
@@ -203,7 +251,7 @@ def main(filename: str | None = None) -> None:
 
         else:
             print()
-            print("  Invalid choice. Please enter 1-7.")
+            print("  Invalid choice. Please enter 1-9.")
             print()
 
 
