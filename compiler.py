@@ -233,15 +233,35 @@ def main(filename: str | None = None) -> None:
         elif choice == "8":
             _heading(8, "SYMBOL TABLE DEMONSTRATION", src)
             st = SymbolTable()
-            # Simulation of symbol table updates for evaluation program
-            st.insert("a", "int")
-            st.insert("b", "int")
-            st.insert("sum", "int")
-            st.insert("avg", "float")
-            st.enter_scope() # while scope
-            st.insert("temp", "int")
+            # Simulation of hierarchical scopes from BITS Pilani slides
+            st.insert("x", "int", kind="var")
+            st.insert("f", "int -> int", kind="fun")
+            st.insert("g", "int -> float", kind="fun")
+            
+            st.enter_scope("func f")
+            st.insert("m", "int", kind="arg")
+            st.insert("x", "float", kind="var")
+            st.insert("y", "float", kind="var")
+            
+            st.enter_scope("block 1")
+            st.insert("i", "int", kind="var")
+            st.insert("j", "int", kind="var")
             st.exit_scope()
+            
+            st.enter_scope("block 2")
+            st.insert("x", "int", kind="var")
+            st.insert("l", "label", kind="lab")
+            st.exit_scope()
+            
+            st.exit_scope() # exit func f
+            
+            st.enter_scope("func g")
+            st.insert("n", "int", kind="arg")
+            st.insert("t", "int", kind="var") # bool not in type system yet
+            st.exit_scope()
+            
             st.dump()
+            st.print_multi_tables()
 
         elif choice == "9":
             print()

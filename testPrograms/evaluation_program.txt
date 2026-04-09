@@ -1,24 +1,27 @@
-int a;
-int b;
-int sum;
-float avg;
-a = 2 * (3 + 4);
-b = 15;
-sum = 0;
-while (a < b && b != 0) {
-    int temp;
-    temp = a * 2;
-    if ((temp % 3 == 0) || (a > 5)) {
-        sum = sum + temp;
-    } else {
-        sum = sum - 1;
+int x;
+
+int f(int m) {
+    float x;
+    float y;
+    {
+        int i;
+        int j;
+        i = 10;
+        j = 20;
     }
-    a = a + 1;
-}
-avg = sum / (b - a);
-if (!(avg < 5.0)) {
-    print(sum);
-} else {
-    print(avg);
+    {
+        int x;
+        x = 5;
+    }
 }
 
+int g(int n) {
+    int t;
+    t = 1;
+}
+
+x = 0;
+while (x < 10) {
+    print(x);
+    x = x + 1;
+}

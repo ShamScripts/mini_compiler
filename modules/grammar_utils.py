@@ -179,9 +179,11 @@ class Grammar:
         return action, goto_table, augmented_rules
 
 MINI_COMPILER_GRAMMAR = {
-    "Program": [["Decls", "Stmts"]],
-    "Decls": [["Decl", "Decls"], []],
-    "Decl": [["Type", "IDENTIFIER", "SEMICOLON"]],
+    "Program": [["Units"]],
+    "Units": [["Unit", "Units"], []],
+    "Unit": [["Type", "IDENTIFIER", "DeclOrFunc"], ["Stmt"]],
+    "DeclOrFunc": [["SEMICOLON"], ["LPAREN", "Param", "RPAREN", "Block"]],
+    "Param": [["Type", "IDENTIFIER"], []],
     "Type": [["int"], ["float"]],
     "Stmts": [["Stmt", "Stmts"], []],
     "Stmt": [["Assign"], ["IfStmt"], ["WhileStmt"], ["PrintStmt"], ["Block"]],
@@ -190,9 +192,7 @@ MINI_COMPILER_GRAMMAR = {
     "ElsePart": [["else", "Block"], []],
     "WhileStmt": [["while", "LPAREN", "BoolExpr", "RPAREN", "Block"]],
     "PrintStmt": [["print", "LPAREN", "BoolExpr", "RPAREN", "SEMICOLON"]],
-    "Block": [["LBRACE", "Decls", "Stmts", "RBRACE"]],
-    
-    # Unified Expression Hierarchy (Resolves LL(1) Parentheses Conflict)
+    "Block": [["LBRACE", "Units", "RBRACE"]],
     "BoolExpr": [["BoolTerm", "BoolExprPrime"]],
     "BoolExprPrime": [["OR", "BoolTerm", "BoolExprPrime"], []],
     "BoolTerm": [["RelExpr", "BoolTermPrime"]],

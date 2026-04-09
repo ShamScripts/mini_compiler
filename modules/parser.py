@@ -9,9 +9,22 @@ from .tokens import TokenType, Token, SyntaxErrorReport
 # --- AST node classes ---
 
 @dataclass
+class Param:
+    type_name: str
+    name: str
+
+
+@dataclass
+class FuncDecl:
+    return_type: str
+    name: str
+    param: Optional[Param]
+    body: "Block"
+
+
+@dataclass
 class Program:
-    decls: List["Decl"]
-    stmts: List["Stmt"]
+    units: List
 
 
 @dataclass
@@ -51,8 +64,7 @@ class PrintStmt(Stmt):
 
 @dataclass
 class Block(Stmt):
-    decls: List[Decl]
-    stmts: List[Stmt]
+    units: List
 
 
 @dataclass
@@ -121,6 +133,10 @@ class FloatLit(Expr):
 def _label(node) -> str:
     if isinstance(node, Program):
         return "Program"
+    if isinstance(node, Param):
+        return f"Param({node.type_name} {node.name})"
+    if isinstance(node, FuncDecl):
+        return f"FuncDecl({node.return_type} {node.name})"
     if isinstance(node, Decl):
         return f"Decl({node.type_name} {node.name})"
     if isinstance(node, Assign):
@@ -156,7 +172,11 @@ def _label(node) -> str:
 
 def _children(node) -> list:
     if isinstance(node, Program):
-        return list(node.decls) + list(node.stmts)
+        return list(node.units)
+    if isinstance(node, Param):
+        return []
+    if isinstance(node, FuncDecl):
+        return ([node.param] if node.param else []) + [node.body]
     if isinstance(node, Decl):
         return []
     if isinstance(node, Assign):
@@ -168,7 +188,7 @@ def _children(node) -> list:
     if isinstance(node, PrintStmt):
         return [node.expr]
     if isinstance(node, Block):
-        return list(node.decls) + list(node.stmts)
+        return list(node.units)
     if isinstance(node, BoolOr):
         return [node.left, node.right]
     if isinstance(node, BoolAnd):
@@ -255,33 +275,41 @@ class Parser:
         return None
 
     def parse(self):
-        decls = []
-        while self.current().type in (TokenType.INT, TokenType.FLOAT):
-            d = self.parse_decl()
-            if d:
-                decls.append(d)
-        stmts = []
+        units = []
         while self.current().type != TokenType.EOF and self.current().type != TokenType.RBRACE:
-            s = self.parse_stmt()
-            if s:
-                stmts.append(s)
-        return Program(decls=decls, stmts=stmts)
+            u = self.parse_unit()
+            if u:
+                units.append(u)
+        return Program(units=units)
 
-    def parse_decl(self):
+    def parse_unit(self):
         t = self.current()
-        if t.type == TokenType.INT:
+        if t.type in (TokenType.INT, TokenType.FLOAT):
+            type_name = t.lexeme
             self.advance()
-            type_name = "int"
-        elif t.type == TokenType.FLOAT:
-            self.advance()
-            type_name = "float"
+            id_tok = self.expect(TokenType.IDENTIFIER)
+            if not id_tok:
+                return None
+            
+            if self.current().type == TokenType.LPAREN:
+                # Function declaration
+                self.advance()
+                param = None
+                if self.current().type in (TokenType.INT, TokenType.FLOAT):
+                    ptype = self.current().lexeme
+                    self.advance()
+                    pid = self.expect(TokenType.IDENTIFIER)
+                    if pid:
+                        param = Param(type_name=ptype, name=pid.lexeme)
+                self.expect(TokenType.RPAREN)
+                body = self.parse_block()
+                return FuncDecl(return_type=type_name, name=id_tok.lexeme, param=param, body=body)
+            else:
+                # Variable declaration
+                self.expect(TokenType.SEMICOLON)
+                return Decl(type_name=type_name, name=id_tok.lexeme)
         else:
-            return None
-        id_tok = self.expect(TokenType.IDENTIFIER)
-        if not id_tok:
-            return None
-        self.expect(TokenType.SEMICOLON)
-        return Decl(type_name=type_name, name=id_tok.lexeme)
+            return self.parse_stmt()
 
     def parse_stmt(self):
         t = self.current()
@@ -352,18 +380,13 @@ class Parser:
 
     def parse_block(self):
         self.expect(TokenType.LBRACE)
-        decls = []
-        while self.current().type in (TokenType.INT, TokenType.FLOAT):
-            d = self.parse_decl()
-            if d:
-                decls.append(d)
-        stmts = []
+        units = []
         while self.current().type != TokenType.RBRACE and self.current().type != TokenType.EOF:
-            s = self.parse_stmt()
-            if s:
-                stmts.append(s)
+            u = self.parse_unit()
+            if u:
+                units.append(u)
         self.expect(TokenType.RBRACE)
-        return Block(decls=decls, stmts=stmts)
+        return Block(units=units)
 
     def parse_bool_expr(self):
         left = self.parse_bool_term()
