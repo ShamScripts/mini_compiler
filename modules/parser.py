@@ -276,7 +276,7 @@ class Parser:
 
     def parse(self):
         units = []
-        while self.current().type != TokenType.EOF and self.current().type != TokenType.RBRACE:
+        while self.current().type != TokenType.EOF:
             u = self.parse_unit()
             if u:
                 units.append(u)
@@ -427,7 +427,19 @@ class Parser:
                 return None
             self.expect(TokenType.RPAREN)
             return inner
-        return self.parse_rel_expr()
+        left = self.parse_expr()
+        if not left:
+            return None
+        t = self.current()
+        if t.type in (TokenType.LT, TokenType.GT, TokenType.LE, TokenType.GE, TokenType.EQ, TokenType.NE):
+            op = t.lexeme
+            self.advance()
+            right = self.parse_expr()
+            if not right:
+                return None
+            return RelExpr(left=left, op=op, right=right)
+        # Allow expression-form conditions; semantic phase validates boolean correctness.
+        return left
 
     def parse_rel_expr(self):
         left = self.parse_expr()
@@ -471,6 +483,12 @@ class Parser:
 
     def parse_factor(self):
         t = self.current()
+        if t.type == TokenType.MINUS:
+            self.advance()
+            inner = self.parse_factor()
+            if not inner:
+                return None
+            return UnaryMinus(inner=inner)
         if t.type == TokenType.IDENTIFIER:
             self.advance()
             return Var(name=t.lexeme)

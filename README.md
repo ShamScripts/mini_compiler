@@ -1,89 +1,148 @@
 # mini_compiler
 
-Mini Compiler – CS F363 (Python)
+**Mini Compiler - CS F363 (Python)**
 
-This is a small compiler project for the CS F363 Compiler Construction course.  
+Compiler construction project for CS F363, designed as a step-by-step implementation of core compiler phases.
+
+---
+
+## Goal
+
 The goal is to build the full pipeline step by step:
 
-- **Lexical analysis**
-- **Syntax analysis**
-- **Semantic analysis + symbol table**
-- **Intermediate code (TAC)**
-- **Basic optimisation + pseudo assembly**
+Lexical analysis
 
-Right now the following are implemented:
+Syntax analysis
 
-- **Lexical Analysis**
-- **Recursive-Descent Syntax Analysis**
-- **LL(1) Table-Driven Parsing** (Compre Eval Q1)
-- **Shift-Reduce Parsing** (Compre Eval Q1)
-- **Nested Symbol Table Management** (Compre Eval Q2)
+Semantic analysis + symbol table
+
+Intermediate code (TAC)
+
+Basic optimisation + pseudo assembly
 
 ---
 
-## Project layout
+## Implementation Status
 
-- **`compiler.py`** – main script. Entry point; menu-driven interface
-- **`evaluation_program.txt`** – the uniform test program given in the assignment.
-- **`contribution.md`** – member-wise work distribution for all questions.
-- **`testPrograms/`** – valid and invalid test cases with evaluation program
-- **`modules/`**
-  - **`__init__.py`** – marks this as a package.
-  - **`tokens.py`** – token kinds (`TokenType`), `Token`, and `LexicalError`.
-  - **`lexer.py`** – lexical analyzer (regex-based)
-  - **`parser.py`** – recursive-descent parser + AST
-  - **`ll1_parser.py`** – LL(1) table-driven parser (Q1)
-  - **`slr_parser.py`** – SLR(1) shift-reduce parser (Q1)
-  - **`symbol_table.py`** – nested scope symbol table (Q2)
-  - **`syntax_analyzer.py`** – syntax driver
-  - **`tac_generator.py`** – intermediate code generation (Q3)
-  - **`optimizer.py`** – basic block optimization (Q4)
+| Phase | Status |
+|---|---|
+| Lexical Analysis | Implemented |
+| Syntax Analysis (Recursive Descent + AST) | Implemented |
+| LL(1) Parser Evaluation | Implemented |
+| SLR(1) Parser Evaluation | Implemented |
+| FIRST/FOLLOW + Parsing Tables | Implemented |
+| Symbol Table with Nested Scopes | Implemented |
+| Semantic Analysis | Implemented |
+| TAC Generation | Planned |
+| Optimization | Planned |
+| Target/Pseudo Assembly Generation | Planned |
 
 ---
 
-## Contributors
+## Architecture Snapshot
 
-This project is being developed collaboratively as part of the **CS F363 Compiler Construction assignment**.
+```text
+Source Program
+   |
+   v
+Lexer
+   |
+   v
+Token Stream
+   |
+   v
+Parser (AST)
+   |
+   v
+Symbol Table (Scoped Bindings)
+   |
+   v
+Semantic Analyzer
+```
 
-- Shambhavi Jha [2023A7PS0009U]
-- Venkata Shreya Vella [2023A7PS0096U]
-- Yuvaraj Nayak [2023A7PS0006U]
-- Krishna Nagpal [2023A7PS0321U]
-
-Contribution details for each phase will be documented in [**`contribution.md`**](contribution.md).
+Supporting parser-evaluation path:
+- LL(1) stack trace
+- SLR shift/reduce trace
+- FIRST/FOLLOW and table construction materials
 
 ---
 
-### How to run?
+## Project Structure
 
-From the project folder:
+### Root
+- `compiler.py` - main entry point (menu-driven compiler runner)
+- `README.md` - project overview and run/demo guide
+- `contribution.md` - team contribution details
+
+### `reports/`
+- `lexical_specification.md` - formal lexical specification artifact
+
+### `docs/`
+- `00_overall_compiler.md`
+- `01_lexer.md`
+- `02_parser.md`
+- `03_grammar.md`
+- `04_symbol_table.md`
+- `05_compiler_driver.md`
+- `06_semantic_analysis.md`
+
+### `testPrograms/`
+- `evaluation_program.txt` - official evaluation program
+- `demo.txt` - integrated demo program
+- `Q1_Lexical/` ... `Q8_Optimization_TargetCode/` - question-wise categorized tests
+
+### `modules/`
+- `tokens.py` - token enums + error/report dataclasses
+- `lexer.py` - lexical analyzer (regex-based scanner)
+- `parser.py` - recursive-descent parser + AST node model
+- `grammar_utils.py` - CFG, FIRST/FOLLOW, LL(1)/SLR table generation
+- `ll1_parser.py` - LL(1) parser with trace
+- `slr_parser.py` - SLR parser with trace
+- `syntax_analyzer.py` - CFG/derivation/parse-tree display utilities
+- `symbol_table.py` - AST-driven scoped symbol table
+- `semantic_analyzer.py` - semantic checks using AST + symbol table
+- `tac_generator.py` - planned module (not implemented yet)
+- `optimizer.py` - planned module (not implemented yet)
+- `target_codegen.py` - planned module (not implemented yet)
+
+---
+
+## Quick Start
+
+Run with default source:
 
 ```bash
 python compiler.py
 ```
 
-This will:
-
-- Read `program.txt`,
-- Run the lexer,
-- Print any **lexical errors**,
-- Print the full **token stream** (token type, lexeme, line, column).
-
-You can also pass a different source file:
+Run with explicit file:
 
 ```bash
-# Invalid test cases
-python compiler.py testPrograms/invalidTest1.txt
-python compiler.py testPrograms/invalidTest2.txt
-python compiler.py testPrograms/invalidTest3.txt
-python compiler.py testPrograms/invalidTest4.txt
-python compiler.py testPrograms/invalidTest5.txt
-
-# Valid test cases
-python compiler.py testPrograms/validTestCase1.txt
-python compiler.py testPrograms/validTestCase2.txt
-python compiler.py testPrograms/validTestCase3.txt
-python compiler.py testPrograms/validTestCase4.txt
+python compiler.py testPrograms/evaluation_program.txt
 ```
 
 ---
+
+## Demo Flow (Evaluator-Friendly)
+
+Use this sequence during viva/demo:
+
+1. Run `testPrograms/evaluation_program.txt`
+2. Option `2` -> token stream
+3. Option `3` -> AST
+4. Option `1` -> lexical/syntax/semantic summary
+5. Option `8` -> symbol table trace + scoped tables
+6. Options `4`, `5`, `7` -> LL(1)/SLR traces + FIRST/FOLLOW/tables
+
+Error-case demonstration:
+- Syntax errors: `testPrograms/Q3_SyntaxErrors/`
+- Semantic errors: `testPrograms/Q6_Semantic/`
+
+---
+
+## Contributors
+
+- Shambhavi Jha [2023A7PS0009U]
+- Venkata Shreya Vella [2023A7PS0096U]
+- Yuvaraj Nayak [2023A7PS0006U]
+- Krishna Nagpal [2023A7PS0321U]

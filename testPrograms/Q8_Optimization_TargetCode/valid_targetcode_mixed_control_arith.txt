@@ -1,0 +1,13 @@
+int x;
+int sum;
+x = 1;
+sum = 0;
+while (x <= 5) {
+    if (x % 2 == 0) {
+        sum = sum + x;
+    } else {
+        sum = sum + 1;
+    }
+    x = x + 1;
+}
+print(sum);

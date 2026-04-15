@@ -1,0 +1,4 @@
+float f;
+int x;
+f = 5.5;
+x = f % 2;

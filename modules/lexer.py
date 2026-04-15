@@ -16,6 +16,10 @@ LEXICAL_SPEC = [
     ("Operators", "= + - * / % < > <= >= == != && || !"),
     ("Delimiters", "; { } ( )"),
 ]
+# Note on forms like "2value":
+# The lexer intentionally tokenizes this as INT_LITERAL("2") + IDENTIFIER("value")
+# using maximal prefix matches for each token class. It is then rejected by the
+# parser as a syntax error, not as a single lexical error token.
 
 
 def _err_class(ch: str) -> tuple[str, str]:

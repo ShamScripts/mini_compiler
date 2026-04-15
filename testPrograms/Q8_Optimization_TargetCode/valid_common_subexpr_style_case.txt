@@ -1,0 +1,9 @@
+int a;
+int b;
+int x;
+int y;
+a = 2;
+b = 3;
+x = (a + b) * (a + b);
+y = (a + b) + x;
+print(y);

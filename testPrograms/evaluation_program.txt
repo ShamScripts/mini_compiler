@@ -1,18 +1,15 @@
 int x;
 
 int f(int m) {
-    float x;
     float y;
+    y = 2.5;
     {
         int i;
         int j;
         i = 10;
         j = 20;
     }
-    {
-        int x;
-        x = 5;
-    }
+    x = m + 1;
 }
 
 int g(int n) {
@@ -22,6 +19,10 @@ int g(int n) {
 
 x = 0;
 while (x < 10) {
-    print(x);
+    if ((x < 5) && !(x == 3)) {
+        print(x);
+    } else {
+        print(x);
+    }
     x = x + 1;
 }

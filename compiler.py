@@ -4,6 +4,8 @@ from modules.parser import Parser, ast_dump
 from modules.ll1_parser import LL1Parser
 from modules.slr_parser import SLRParser
 from modules.symbol_table import SymbolTable, Symbol, Scope
+from modules.syntax_analyzer import print_derivations_and_parse_tree
+from modules.semantic_analyzer import SemanticAnalyzer
 
 W = 76
 _B = "-"
@@ -37,7 +39,7 @@ def _tokens(tok_list) -> None:
     print()
 
 
-def _errors(lex_errors, syn_errors, src: str) -> None:
+def _errors(lex_errors, syn_errors, sem_errors, src: str) -> None:
     _heading(1, "CHECK FOR ERRORS", src)
     bar = _B * (W - 6)
     top = f"  +{bar}+"
@@ -74,6 +76,22 @@ def _errors(lex_errors, syn_errors, src: str) -> None:
         else:
             print(f"  |  [OK] No syntax errors.")
             print(top)
+            print()
+            print(top)
+            if sem_errors is None:
+                print(f"  |  Semantic analysis not run.")
+            elif sem_errors:
+                print(f"  |  Semantic errors ({len(sem_errors)} found):")
+                print(f"  |{bar}+")
+                for i, err in enumerate(sem_errors, 1):
+                    for ln in str(err).split("\n"):
+                        print(f"  |  {ln}")
+                    if i < len(sem_errors):
+                        print(f"  |")
+                print(top)
+            else:
+                print(f"  |  [OK] No semantic errors.")
+                print(top)
     print()
 
 
@@ -96,6 +114,7 @@ def _menu() -> str:
     print(f"  |    3. Parse Tree (AST)")
     print(f"  |    4. LL(1) Parser Evaluation (Stack Trace)")
     print(f"  |    5. SLR(1) Parser Evaluation (Stack Trace)")
+    print(f"  |    6. CFG + Left/Right Derivation + Parse Tree")
     print(f"  |    7. Parser Construction Materials (FIRST/FOLLOW/Tables)")
     print(f"  |    8. Symbol Table Demonstration (Nested Scopes)")
     print(f"  |    9. Exit")
@@ -117,10 +136,19 @@ def main(filename: str | None = None) -> None:
 
     ast = None
     syn_errors = None
+    sem_errors = None
+    st = None
+    st_errors = []
     if not lex_errors:
         parser = Parser(tokens)
         ast = parser.parse()
         syn_errors = parser.errors
+        if not syn_errors and ast is not None:
+            st = SymbolTable()
+            st.build_from_ast(ast)
+            st_errors = [f"ERROR: {msg[7:]}" for msg in st.history if msg.startswith("ERROR:")]
+            semantic = SemanticAnalyzer(ast, st)
+            sem_errors = st_errors + semantic.analyze()
 
     h = _EQ * (W - 2)
     print()
@@ -134,7 +162,7 @@ def main(filename: str | None = None) -> None:
         choice = _menu()
 
         if choice == "1":
-            _errors(lex_errors, syn_errors, src)
+            _errors(lex_errors, syn_errors, sem_errors, src)
 
         elif choice == "2":
             _heading(2, "GENERATE STREAM OF TOKENS", src)
@@ -182,6 +210,24 @@ def main(filename: str | None = None) -> None:
                 else:
                     print(f"  SLR(1) Parsing failed: {slr.errors[0] if slr.errors else 'Unknown error'}")
                     slr.print_trace()
+
+        elif choice == "6":
+            _heading(6, "CFG + DERIVATIONS + PARSE TREE", src)
+            bar = _B * (W - 6)
+            if lex_errors:
+                print(f"  +{bar}+")
+                print("  |  Cannot generate: lexical errors present.")
+                print(f"  +{bar}+")
+            elif syn_errors:
+                print(f"  +{bar}+")
+                print("  |  Cannot generate: syntax errors present.")
+                print(f"  +{bar}+")
+            elif ast is not None:
+                print_derivations_and_parse_tree(ast, source_file=src)
+            else:
+                print(f"  +{bar}+")
+                print("  |  Derivation material not available.")
+                print(f"  +{bar}+")
 
         elif choice == "7":
             _heading(7, "PARSER CONSTRUCTION MATERIALS", src)
@@ -232,36 +278,25 @@ def main(filename: str | None = None) -> None:
 
         elif choice == "8":
             _heading(8, "SYMBOL TABLE DEMONSTRATION", src)
-            st = SymbolTable()
-            # Simulation of hierarchical scopes from BITS Pilani slides
-            st.insert("x", "int", kind="var")
-            st.insert("f", "int -> int", kind="fun")
-            st.insert("g", "int -> float", kind="fun")
-            
-            st.enter_scope("func f")
-            st.insert("m", "int", kind="arg")
-            st.insert("x", "float", kind="var")
-            st.insert("y", "float", kind="var")
-            
-            st.enter_scope("block 1")
-            st.insert("i", "int", kind="var")
-            st.insert("j", "int", kind="var")
-            st.exit_scope()
-            
-            st.enter_scope("block 2")
-            st.insert("x", "int", kind="var")
-            st.insert("l", "label", kind="lab")
-            st.exit_scope()
-            
-            st.exit_scope() # exit func f
-            
-            st.enter_scope("func g")
-            st.insert("n", "int", kind="arg")
-            st.insert("t", "int", kind="var") # bool not in type system yet
-            st.exit_scope()
-            
-            st.dump()
-            st.print_multi_tables()
+            bar = _B * (W - 6)
+            if lex_errors:
+                print(f"  +{bar}+")
+                print("  |  Cannot build symbol table: lexical errors present.")
+                print(f"  +{bar}+")
+            elif syn_errors:
+                print(f"  +{bar}+")
+                print("  |  Cannot build symbol table: syntax errors present.")
+                print(f"  +{bar}+")
+            elif ast is not None:
+                if st is None:
+                    st = SymbolTable()
+                    st.build_from_ast(ast)
+                st.dump()
+                st.print_multi_tables()
+            else:
+                print(f"  +{bar}+")
+                print("  |  Symbol table not available.")
+                print(f"  +{bar}+")
 
         elif choice == "9":
             print()

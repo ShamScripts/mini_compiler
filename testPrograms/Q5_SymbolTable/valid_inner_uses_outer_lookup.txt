@@ -1,0 +1,7 @@
+int total;
+total = 100;
+{
+    int i;
+    i = total + 1;
+    print(i);
+}

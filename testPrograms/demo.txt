@@ -1,0 +1,41 @@
+int a;
+int b;
+int c;
+
+int h(int p) {
+    int q;
+    q = p * 2;
+    {
+        int p;
+        p = q + 3;
+        if ((p > q) || !(q == 0)) {
+            print(p);
+        } else {
+            print(q);
+        }
+    }
+    while ((q >= 1) && (q != 4)) {
+        q = q - 1;
+    }
+    a = q;
+}
+
+a = 1;
+b = 2;
+c = (a + b) * (a + b) - (10 / 2);
+
+if ((c > 0) && (a < b)) {
+    print(c);
+} else {
+    print(a);
+}
+
+while (a < 6) {
+    if (a % 2 == 0) {
+        b = b + a;
+    } else {
+        b = b + 1;
+    }
+    a = a + 1;
+}
+print(b);

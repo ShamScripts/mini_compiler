@@ -4,6 +4,7 @@ Also provides the context-free grammar display for the compiler menu.
 """
 
 from __future__ import annotations
+import textwrap
 
 from .parser import Parser, ast_dump
 
@@ -103,6 +104,25 @@ _RIGHT = """
 _W = 72
 _BAR = "-" * (_W - 2)
 _SEP = "=" * (_W - 2)
+_INNER = _W - 6
+
+
+def _box_line(text: str = "") -> None:
+    print(f"  |  {text}")
+
+
+def _box_wrapped(text: str) -> None:
+    for part in textwrap.wrap(text, width=_INNER) or [""]:
+        _box_line(part)
+
+
+def _fmt_prod_line(raw: str) -> str:
+    """Align grammar production lines for better readability."""
+    s = raw.strip()
+    if not s or "->" not in s:
+        return s
+    head, body = s.split("->", 1)
+    return f"{head.strip():<13} -> {body.strip()}"
 
 
 def print_cfg(source_file: str | None = None, skip_heading: bool = False) -> None:
@@ -115,18 +135,18 @@ def print_cfg(source_file: str | None = None, skip_heading: bool = False) -> Non
         print(f"  +{_SEP}+")
     else:
         print(f"  +{_BAR}+")
-    print(f"  |  {_CFG_INTRO}")
+    _box_wrapped(_CFG_INTRO)
     for ln in _CFG_PROD.strip().split("\n"):
-        print(f"  |  {ln.strip()}")
+        _box_line(_fmt_prod_line(ln))
     print(f"  +{_BAR}+")
     print()
 
 
 def _section(title: str, sub: str = "") -> None:
     print(f"\n  +{_BAR}+")
-    print(f"  |  {title}")
+    _box_wrapped(title)
     if sub:
-        print(f"  |  {sub}")
+        _box_wrapped(sub)
     print(f"  +{_BAR}+")
 
 
@@ -139,24 +159,24 @@ def _print_grammar_and_tree(tree_txt: str, src: str | None = None) -> None:
     print(f"  +{_SEP}+")
 
     _section("1. Context-Free Grammar")
-    print(f"  |  {_CFG_INTRO}")
+    _box_wrapped(_CFG_INTRO)
     for ln in _CFG_PROD.strip().split("\n"):
-        print(f"  |  {ln.strip()}")
+        _box_line(_fmt_prod_line(ln))
     print(f"  +{_BAR}+")
 
     _section("2. Leftmost Derivation", "Non-trivial statement from source.")
-    print(f"  |  Statement (line {_LN}): {_STMT}")
-    print(f"  |  At each step, the leftmost nonterminal is replaced.")
+    _box_wrapped(f"Statement (line {_LN}): {_STMT}")
+    _box_wrapped("At each step, the leftmost nonterminal is replaced.")
     print()
     for ln in _LEFT.strip().split("\n"):
-        print(f"  |  {ln}")
+        _box_line(ln.strip())
     print(f"  +{_BAR}+")
 
     _section("3. Rightmost Derivation", "Same statement; rightmost nonterminal replaced each step.")
-    print(f"  |  Statement (line {_LN}): {_STMT}")
+    _box_wrapped(f"Statement (line {_LN}): {_STMT}")
     print()
     for ln in _RIGHT.strip().split("\n"):
-        print(f"  |  {ln}")
+        _box_line(ln.strip())
     print(f"  +{_BAR}+")
 
     _section("4. Parse Tree (AST)", f"Built from token stream for {src}.")
@@ -188,3 +208,10 @@ def run_syntax_analysis(tokens, source_file=None):
         _print_grammar_and_tree(ast_dump(ast), source_file=source_file)
 
     return ast, parser.errors
+
+
+def print_derivations_and_parse_tree(ast, source_file: str | None = None) -> None:
+    """
+    Display CFG, leftmost/rightmost derivations, and parse tree for CLI menu use.
+    """
+    _print_grammar_and_tree(ast_dump(ast), src=source_file)

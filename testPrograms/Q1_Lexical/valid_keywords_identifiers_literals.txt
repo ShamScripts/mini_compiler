@@ -1,0 +1,11 @@
+int x;
+float y;
+x = 10;
+y = 20.5;
+if (x < 100) {
+    print(x);
+} else {
+    while (x != 0) {
+        x = x - 1;
+    }
+}

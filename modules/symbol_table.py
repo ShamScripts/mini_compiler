@@ -1,7 +1,8 @@
 """Symbol Table with support for nested scopes."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional
+from . import parser as ast_nodes
 
 
 @dataclass
@@ -23,6 +24,7 @@ class Scope:
         self.symbols: Dict[str, Symbol] = {}
         self.parent = parent
         self.children: List["Scope"] = []
+        self.next_offset = 0
 
     def insert(self, symbol: Symbol) -> bool:
         if symbol.name in self.symbols:
@@ -39,18 +41,13 @@ class SymbolTable:
         self.root = Scope(0, "Global")
         self.current_scope = self.root
         self.current_level = 0
-        self.next_offset = 0
         self.history: List[str] = []
 
     def enter_scope(self, name: str = "Sub-Scope") -> None:
         self.current_level += 1
         new_scope = Scope(self.current_level, name=name, parent=self.current_scope)
         self.current_scope.children.append(new_scope)
-        
-        # Cross-link: Add the sub-scope as an entry in the parent's table
-        entry_name = name if " " not in name else name.split()[-1]
-        self.current_scope.insert(Symbol(entry_name, "scope", "inner", self.current_level-1, 0))
-        
+
         self.current_scope = new_scope
         self.history.append(f"ENTER SCOPE: {name} (Level {self.current_level})")
 
@@ -67,12 +64,12 @@ class SymbolTable:
         size = 4 if symbol_type == "int" else 8
         if kind != "var":
             size = 0
-            
-        symbol = Symbol(name, kind, symbol_type, self.current_level, self.next_offset)
+
+        symbol = Symbol(name, kind, symbol_type, self.current_level, self.current_scope.next_offset)
         
         success = self.current_scope.insert(symbol)
         if success:
-            self.next_offset += size
+            self.current_scope.next_offset += size
             self.history.append(f"INSERT: {name} ({kind}: {symbol_type}) at Scope {self.current_level}")
         else:
             self.history.append(f"ERROR: Multiple declaration of '{name}' in scope {self.current_level}")
@@ -101,6 +98,86 @@ class SymbolTable:
         print("  |                INDIVIDUAL SYMBOL TABLES                   |")
         print("  +===========================================================+")
         self._print_scope_tables_recursive(self.root)
+
+    def build_from_ast(self, ast: ast_nodes.Program) -> None:
+        """Populate symbol table by traversing the parser AST."""
+        self.history.append("BUILD: Start AST-driven symbol table construction")
+        self._visit_program(ast)
+        self.history.append("BUILD: Completed AST-driven symbol table construction")
+
+    def _visit_program(self, program: ast_nodes.Program) -> None:
+        for unit in program.units:
+            self._visit_unit(unit)
+
+    def _visit_unit(self, unit) -> None:
+        if isinstance(unit, ast_nodes.Decl):
+            self.insert(unit.name, unit.type_name, kind="var")
+        elif isinstance(unit, ast_nodes.FuncDecl):
+            sig = f"{unit.return_type} -> {unit.param.type_name if unit.param else 'void'}"
+            self.insert(unit.name, sig, kind="fun")
+            self.enter_scope(f"func {unit.name}")
+            if unit.param:
+                self.insert(unit.param.name, unit.param.type_name, kind="arg")
+            # Function body uses the function scope already created above.
+            for inner in unit.body.units:
+                self._visit_unit(inner)
+            self.exit_scope()
+        elif isinstance(unit, ast_nodes.Stmt):
+            self._visit_stmt(unit)
+
+    def _visit_stmt(self, stmt) -> None:
+        if isinstance(stmt, ast_nodes.Assign):
+            lhs = self.lookup(stmt.name)
+            if lhs:
+                self.history.append(
+                    f"LOOKUP: {stmt.name} resolved to Scope {lhs.scope_level} (offset {lhs.offset})"
+                )
+            else:
+                self.history.append(f"ERROR: Undeclared identifier '{stmt.name}' used in assignment")
+            self._visit_expr(stmt.expr)
+        elif isinstance(stmt, ast_nodes.PrintStmt):
+            self._visit_expr(stmt.expr)
+        elif isinstance(stmt, ast_nodes.IfStmt):
+            self._visit_bool_expr(stmt.cond)
+            self._visit_block(stmt.then_block, name="if-block")
+            if stmt.else_block:
+                self._visit_block(stmt.else_block, name="else-block")
+        elif isinstance(stmt, ast_nodes.WhileStmt):
+            self._visit_bool_expr(stmt.cond)
+            self._visit_block(stmt.body, name="while-block")
+        elif isinstance(stmt, ast_nodes.Block):
+            self._visit_block(stmt, name="block")
+
+    def _visit_block(self, block: ast_nodes.Block, name: str) -> None:
+        self.enter_scope(name)
+        for unit in block.units:
+            self._visit_unit(unit)
+        self.exit_scope()
+
+    def _visit_bool_expr(self, node) -> None:
+        if isinstance(node, ast_nodes.BoolOr) or isinstance(node, ast_nodes.BoolAnd):
+            self._visit_bool_expr(node.left)
+            self._visit_bool_expr(node.right)
+        elif isinstance(node, ast_nodes.BoolNot):
+            self._visit_bool_expr(node.inner)
+        elif isinstance(node, ast_nodes.RelExpr):
+            self._visit_expr(node.left)
+            self._visit_expr(node.right)
+
+    def _visit_expr(self, node) -> None:
+        if isinstance(node, ast_nodes.Var):
+            sym = self.lookup(node.name)
+            if sym:
+                self.history.append(
+                    f"LOOKUP: {node.name} resolved to Scope {sym.scope_level} (offset {sym.offset})"
+                )
+            else:
+                self.history.append(f"ERROR: Undeclared identifier '{node.name}' used in expression")
+        elif isinstance(node, ast_nodes.BinOp):
+            self._visit_expr(node.left)
+            self._visit_expr(node.right)
+        elif isinstance(node, ast_nodes.UnaryMinus):
+            self._visit_expr(node.inner)
 
     def _print_scope_tables_recursive(self, scope: Scope):
         parent_name = scope.parent.name if scope.parent else "None"
