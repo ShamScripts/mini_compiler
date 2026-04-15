@@ -9,16 +9,11 @@ Compiler construction project for CS F363, designed as a step-by-step implementa
 ## Goal
 
 The goal is to build the full pipeline step by step:
-
-Lexical analysis
-
-Syntax analysis
-
-Semantic analysis + symbol table
-
-Intermediate code (TAC)
-
-Basic optimisation + pseudo assembly
+- **Lexical analysis**
+- **Syntax analysis**
+- **Semantic analysis + symbol table**
+- **Intermediate code (TAC)**
+- **Basic optimisation + pseudo assembly**
 
 ---
 
