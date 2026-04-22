@@ -1,0 +1,9 @@
+int x;
+int y;
+x = 5;
+if (x > 2) {
+    y = x + (3 * 4);
+} else {
+    y = x - (1 + 1);
+}
+print(y);

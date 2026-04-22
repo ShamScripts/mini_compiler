@@ -1,0 +1,3 @@
+int x;
+x = result + 10;
+print(x);

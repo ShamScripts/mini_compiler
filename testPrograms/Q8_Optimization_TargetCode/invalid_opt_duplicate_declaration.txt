@@ -1,0 +1,4 @@
+int z;
+int z;
+z = 7 + 3;
+print(z);

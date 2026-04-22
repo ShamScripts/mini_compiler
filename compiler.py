@@ -6,6 +6,8 @@ from modules.slr_parser import SLRParser
 from modules.symbol_table import SymbolTable, Symbol, Scope
 from modules.syntax_analyzer import print_derivations_and_parse_tree
 from modules.semantic_analyzer import SemanticAnalyzer
+from modules.intermediate_code import generate_tac
+from modules.target_code import optimize_tac, generate_target_code
 
 W = 76
 _B = "-"
@@ -117,10 +119,12 @@ def _menu() -> str:
     print(f"  |    6. CFG + Left/Right Derivation + Parse Tree")
     print(f"  |    7. Parser Construction Materials (FIRST/FOLLOW/Tables)")
     print(f"  |    8. Symbol Table Demonstration (Nested Scopes)")
-    print(f"  |    9. Exit")
+    print(f"  |    9. Generate Intermediate Code (TAC)")
+    print(f"  |   10. Optimize & Generate Target Code")
+    print(f"  |   11. Exit")
     print(f"  +{bar}+")
     print()
-    return input("  Enter choice (1-9): ").strip()
+    return input("  Enter choice (1-11): ").strip()
 
 
 def main(filename: str | None = None) -> None:
@@ -299,6 +303,47 @@ def main(filename: str | None = None) -> None:
                 print(f"  +{bar}+")
 
         elif choice == "9":
+            _heading(9, "INTERMEDIATE CODE GENERATION (TAC)", src)
+            bar = _B * (W - 6)
+            if lex_errors or syn_errors:
+                print(f"  +{bar}+")
+                print("  |  Cannot generate TAC: errors in earlier phases.")
+                print(f"  +{bar}+")
+            elif ast is not None:
+                tac = generate_tac(ast)
+                print(f"  +{bar}+")
+                for inst in tac:
+                    print(f"  |  {inst}")
+                print(f"  +{bar}+")
+            else:
+                print("  |  AST not available.")
+
+        elif choice == "10":
+            _heading(10, "OPTIMIZATION & TARGET CODE GENERATION", src)
+            bar = _B * (W - 6)
+            if lex_errors or syn_errors:
+                print(f"  +{bar}+")
+                print("  |  Cannot generate Target Code: errors in earlier phases.")
+                print(f"  +{bar}+")
+            elif ast is not None:
+                tac = generate_tac(ast)
+                optimized = optimize_tac(tac)
+                target = generate_target_code(optimized)
+                print(f"  +{bar}+")
+                print("  |  OPTIMIZED TAC (Constant Folding):")
+                print(f"  +{bar}+")
+                for inst in optimized:
+                    print(f"  |  {inst}")
+                print(f"  +{bar}+")
+                print("  |  TARGET CODE (Pseudo-Assembly):")
+                print(f"  +{bar}+")
+                for inst in target:
+                    print(f"  |  {inst}")
+                print(f"  +{bar}+")
+            else:
+                print("  |  AST not available.")
+
+        elif choice == "11":
             print()
             print("  Exiting.")
             print()
@@ -306,7 +351,7 @@ def main(filename: str | None = None) -> None:
 
         else:
             print()
-            print("  Invalid choice. Please enter 1-9.")
+            print("  Invalid choice. Please enter 1-11.")
             print()
 
 

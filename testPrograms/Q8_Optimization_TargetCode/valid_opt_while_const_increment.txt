@@ -1,0 +1,9 @@
+int i;
+int acc;
+i = 0;
+acc = 10;
+while (i < 3) {
+    acc = acc + 5;
+    i = i + 1;
+}
+print(acc);
