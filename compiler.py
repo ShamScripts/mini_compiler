@@ -314,4 +314,10 @@ if __name__ == "__main__":
     import sys
 
     arg = sys.argv[1] if len(sys.argv) > 1 else None
-    main(arg)
+    try:
+        main(arg)
+    except KeyboardInterrupt:
+        print()
+        print("  Exiting (Keyboard Interrupt).")
+        print()
+        sys.exit(0)
