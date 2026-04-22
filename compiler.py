@@ -6,7 +6,7 @@ from modules.slr_parser import SLRParser
 from modules.symbol_table import SymbolTable, Symbol, Scope
 from modules.syntax_analyzer import print_derivations_and_parse_tree
 from modules.semantic_analyzer import SemanticAnalyzer
-from modules.intermediate_code import generate_tac
+from modules.intermediate_code import generate_tac, generate_triples
 from modules.target_code import optimize_tac, generate_target_code
 
 W = 76
@@ -310,11 +310,33 @@ def main(filename: str | None = None) -> None:
                 print("  |  Cannot generate TAC: errors in earlier phases.")
                 print(f"  +{bar}+")
             elif ast is not None:
-                tac = generate_tac(ast)
                 print(f"  +{bar}+")
-                for inst in tac:
-                    print(f"  |  {inst}")
+                print("  |  Select representation:")
+                print("  |    [1] Quadruples (Quadruple format with explicit result)")
+                print("  |    [2] Triples (Position-based results)")
                 print(f"  +{bar}+")
+                sub = input("  Enter choice (1-2): ").strip()
+                
+                if sub == "1":
+                    print(f"  +{bar}+")
+                    print("  |  QUADRUPLES (TAC):")
+                    print(f"  +{bar}+")
+                    tac = generate_tac(ast)
+                    for i, inst in enumerate(tac):
+                        print(f"  |  {i:<4} {inst}")
+                    print(f"  +{bar}+")
+                elif sub == "2":
+                    print(f"  +{bar}+")
+                    print("  |  TRIPLES:")
+                    print(f"  +{bar}+")
+                    triples = generate_triples(ast)
+                    for i, triple in enumerate(triples):
+                        print(f"  |  {i:<4} {triple}")
+                    print(f"  +{bar}+")
+                else:
+                    print(f"  +{bar}+")
+                    print("  |  Invalid choice.")
+                    print(f"  +{bar}+")
             else:
                 print("  |  AST not available.")
 
