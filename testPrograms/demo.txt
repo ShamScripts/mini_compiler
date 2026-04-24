@@ -1,41 +1,28 @@
-int a;
-int b;
-int c;
+int x;
 
-int h(int p) {
-    int q;
-    q = p * 2;
+int f(int m) {
+    int x;
+    x = 2.5;
     {
-        int p;
-        p = q + 3;
-        if ((p > q) || !(q == 0)) {
-            print(p);
-        } else {
-            print(q);
-        }
+        int i;
+        int j;
+        i = 10;
+        j = 20;
     }
-    while ((q >= 1) && (q != 4)) {
-        q = q - 1;
-    }
-    a = q;
+    x = m + 1;
 }
 
-a = 1;
-b = 2;
-c = (a + b) * (a + b) - (10 / 2);
-
-if ((c > 0) && (a < b)) {
-    print(c);
-} else {
-    print(a);
+int g(int n) {
+    int t;
+    t = 1;
 }
 
-while (a < 6) {
-    if (a % 2 == 0) {
-        b = b + a;
+x = 0;
+while (x < 10) {
+    if ((x < 5) && !(x == 3)) {
+        print(x);
     } else {
-        b = b + 1;
+        print(x);
     }
-    a = a + 1;
+    x = x + 1;
 }
-print(b);
