@@ -8,7 +8,7 @@ Compiler construction project for CS F363, designed as a step-by-step implementa
 
 ## Goal
 
-The goal is to build the full pipeline step by step:
+The goal was to build the full pipeline step by step:
 - **Lexical analysis**
 - **Syntax analysis**
 - **Semantic analysis + symbol table**
@@ -128,6 +128,8 @@ Use this sequence during viva/demo:
 4. Option `1` -> lexical/syntax/semantic summary
 5. Option `8` -> symbol table trace + scoped tables
 6. Options `4`, `5`, `7` -> LL(1)/SLR traces + FIRST/FOLLOW/tables
+7. Option `9` -> TAC
+8. Option `10` -> optimize target code
 
 Error-case demonstration:
 - Syntax errors: `testPrograms/Q3_SyntaxErrors/`
