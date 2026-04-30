@@ -28,9 +28,9 @@ The goal is to build the full pipeline step by step:
 | FIRST/FOLLOW + Parsing Tables | Implemented |
 | Symbol Table with Nested Scopes | Implemented |
 | Semantic Analysis | Implemented |
-| TAC Generation | Planned |
-| Optimization | Planned |
-| Target/Pseudo Assembly Generation | Planned |
+| TAC Generation | Implemented |
+| Optimization | Implemented |
+| Target/Pseudo Assembly Generation | Implemented |
 
 ---
 
