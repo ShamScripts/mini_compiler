@@ -463,6 +463,11 @@ def main(filename: str | None = None) -> None:
             optimized = optimize_tac(tac)
             target = generate_target_code(optimized)
             print(f"  +{bar}+")
+            print("  |  TAC BEFORE OPTIMIZATION:")
+            print(f"  +{bar}+")
+            for inst in tac:
+                print(f"  |  {inst}")
+            print(f"  +{bar}+")
             print("  |  OPTIMIZED TAC (Constant Folding):")
             print(f"  +{bar}+")
             for inst in optimized:
